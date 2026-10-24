@@ -1,0 +1,20 @@
+fontgate
+Copyright (c) 2026 llinok111
+
+This product depends on fontTools, which is distributed under the MIT License:
+
+    Copyright (c) 2017 Just van Rossum and contributors
+    https://github.com/fonttools/fonttools
+
+No source code from fontTools is copied into this repository. fontTools is
+used as an installed library, through its public Python API
+(fontTools.ttLib, fontTools.pens, fontTools.subset). The upstream project is
+not modified, forked or patched.
+
+WOFF2 support requires the Brotli Python bindings
+(https://github.com/google/brotli, MIT License) at runtime. It is an optional
+dependency: uncompressed TrueType/OpenType and WOFF files work without it.
+
+The fonts used by the demo runner are read from the operating system and are
+never redistributed with this project. Only synthetic fonts generated at test
+time are included, and those are generated from code in tests/helpers.py.

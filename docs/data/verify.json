@@ -1,0 +1,285 @@
+{
+ "checks": [
+  {
+   "details": {
+    "actual": "woff2",
+    "extension": ".woff2",
+    "implied": "woff2"
+   },
+   "name": "format",
+   "status": "pass",
+   "summary": "woff2 container"
+  },
+  {
+   "details": {
+    "dropped_optional": [
+     "kern"
+    ],
+    "missing_required": [],
+    "tables": [
+     "GDEF",
+     "GPOS",
+     "GSUB",
+     "GlyphOrder",
+     "OS/2",
+     "VDMX",
+     "cmap",
+     "cvt ",
+     "fpgm",
+     "gasp",
+     "glyf",
+     "hdmx",
+     "head",
+     "hhea",
+     "hmtx",
+     "loca",
+     "maxp",
+     "name",
+     "post",
+     "prep",
+     "vhea",
+     "vmtx"
+    ]
+   },
+   "name": "tables",
+   "status": "warn",
+   "summary": "22 tables, 1 dropped from source"
+  },
+  {
+   "details": {
+    "family": "Microsoft YaHei",
+    "weight_class": 400
+   },
+   "name": "identity",
+   "status": "pass",
+   "summary": "Microsoft YaHei 400"
+  },
+  {
+   "details": {
+    "covered": 354,
+    "empty": 0,
+    "expected": 354,
+    "missing": 0
+   },
+   "name": "coverage",
+   "status": "pass",
+   "summary": "354/354 expected characters present"
+  },
+  {
+   "details": {
+    "advance_diffs": 0,
+    "bounds_diffs": 0,
+    "compared": 354
+   },
+   "name": "metrics",
+   "status": "pass",
+   "summary": "354 glyphs compared, 0 advance diffs, 0 bounds diffs"
+  },
+  {
+   "details": {
+    "critical_lost": [],
+    "dangling": 0,
+    "dropped_irrelevant": [
+     "ccmp",
+     "mark"
+    ],
+    "references_checked": 24,
+    "source_features": [
+     "ccmp",
+     "mark",
+     "vert"
+    ],
+    "subset_features": [
+     "vert"
+    ]
+   },
+   "name": "layout",
+   "status": "pass",
+   "summary": "24 glyph references, 1 features kept, 2 dropped (0 relevant)"
+  },
+  {
+   "details": {
+    "budget": 409600,
+    "bytes": 107164
+   },
+   "name": "budget",
+   "status": "pass",
+   "summary": "107164 / 409600 bytes"
+  }
+ ],
+ "covered": 354,
+ "expected": 354,
+ "findings": [
+  {
+   "code": "table-missing",
+   "detail": {
+    "path": "demo/out/site-subset.woff2",
+    "tables": [
+     "kern"
+    ]
+   },
+   "message": "these tables existed in the source but not in the subset: kern",
+   "scope": "tables",
+   "severity": "warn"
+  }
+ ],
+ "kind": "verify",
+ "size": {
+  "ratio": 0.005439,
+  "saved_bytes": 19597188,
+  "source_bytes": 19704352,
+  "subset_bytes": 107164
+ },
+ "source": {
+  "cmap_count": 29905,
+  "cmap_digest": "a572f7c2290713b5409cf8cded1ac4284d005db3eb195984c04968f7071683a9",
+  "cmap_subtables": [
+   {
+    "encoding": 3,
+    "format": 4,
+    "mappings": 29709,
+    "platform": 0,
+    "supplementary": 0,
+    "unicode": true
+   },
+   {
+    "encoding": 1,
+    "format": 4,
+    "mappings": 29709,
+    "platform": 3,
+    "supplementary": 0,
+    "unicode": true
+   },
+   {
+    "encoding": 10,
+    "format": 12,
+    "mappings": 29905,
+    "platform": 3,
+    "supplementary": 196,
+    "unicode": true
+   }
+  ],
+  "container": "collection",
+  "face_format": "truetype-glyf",
+  "family": "Microsoft YaHei",
+  "file_size": 19704352,
+  "full_name": "Microsoft YaHei",
+  "glyph_count": 30209,
+  "index": 0,
+  "is_variable": false,
+  "missing_rendering": [],
+  "missing_required": [],
+  "outline_kind": "truetype-glyf",
+  "path": "C:/Windows/Fonts/msyh.ttc",
+  "postscript_name": "MicrosoftYaHei",
+  "sha256": "d79c55e68b1131eea0cc1c47be4f572d964f28c682e143db2ad09c1e4cb07a3f",
+  "subfamily": "Regular",
+  "supports_supplementary": true,
+  "tables": [
+   "GDEF",
+   "GPOS",
+   "GSUB",
+   "GlyphOrder",
+   "LTSH",
+   "MERG",
+   "OS/2",
+   "VDMX",
+   "cmap",
+   "cvt ",
+   "fpgm",
+   "gasp",
+   "glyf",
+   "hdmx",
+   "head",
+   "hhea",
+   "hmtx",
+   "kern",
+   "loca",
+   "maxp",
+   "meta",
+   "name",
+   "post",
+   "prep",
+   "vhea",
+   "vmtx"
+  ],
+  "variable_axes": [],
+  "warnings": [],
+  "weight_class": 400,
+  "width_class": 5
+ },
+ "status": "warn",
+ "subset": {
+  "cmap_count": 355,
+  "cmap_digest": "9e370a6d283bd2362a5c2ffe8c402c04ad4e9f7000ebff2f850965a80b65a09d",
+  "cmap_subtables": [
+   {
+    "encoding": 3,
+    "format": 4,
+    "mappings": 355,
+    "platform": 0,
+    "supplementary": 0,
+    "unicode": true
+   },
+   {
+    "encoding": 1,
+    "format": 4,
+    "mappings": 355,
+    "platform": 3,
+    "supplementary": 0,
+    "unicode": true
+   }
+  ],
+  "container": "woff2",
+  "face_format": "woff2",
+  "family": "Microsoft YaHei",
+  "file_size": 107164,
+  "full_name": "Microsoft YaHei",
+  "glyph_count": 364,
+  "index": 0,
+  "is_variable": false,
+  "missing_rendering": [
+   "kern"
+  ],
+  "missing_required": [],
+  "outline_kind": "truetype-glyf",
+  "path": "demo/out/site-subset.woff2",
+  "postscript_name": "MicrosoftYaHei",
+  "sha256": "c3750ceece034430388004bd10b928822a2b0cd5b1d4dec1e743b5b1fbfa9487",
+  "subfamily": "Regular",
+  "supports_supplementary": false,
+  "tables": [
+   "GDEF",
+   "GPOS",
+   "GSUB",
+   "GlyphOrder",
+   "OS/2",
+   "VDMX",
+   "cmap",
+   "cvt ",
+   "fpgm",
+   "gasp",
+   "glyf",
+   "hdmx",
+   "head",
+   "hhea",
+   "hmtx",
+   "loca",
+   "maxp",
+   "name",
+   "post",
+   "prep",
+   "vhea",
+   "vmtx"
+  ],
+  "variable_axes": [],
+  "warnings": [],
+  "weight_class": 400,
+  "width_class": 5
+ },
+ "summary": {
+  "error": 0,
+  "info": 0,
+  "warn": 1
+ }
+}

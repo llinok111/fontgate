@@ -1,0 +1,29 @@
+:root {
+  --ink: #1A1A18;
+  --paper: #FAFAF8;
+  --rule: #E1E1DA;
+  --accent: #4A78D0;
+  --mono: "JetBrains Mono", "Cascadia Mono", monospace;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+  line-height: 1.75;
+}
+
+h1::before {
+  content: "交付闸门 · ";
+  color: var(--accent);
+}
+
+blockquote::after {
+  content: " —— 验收笔记";
+  font-size: 0.85em;
+  color: #6B6B63;
+}
+
+code { font-family: var(--mono); }
+
+/* 尺规标记：↵ § ¶ † ‡ • … ‰ ′ ″ */

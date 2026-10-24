@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fontgate"
+version = "1.0.0"
+description = "Verification gates for web font delivery: prove a subset still renders the text you ship."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "llinok111" }]
+keywords = ["font", "webfont", "subset", "fonttools", "woff2", "ci"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Text Processing :: Fonts",
+]
+dependencies = ["fonttools>=4.40"]
+
+[project.optional-dependencies]
+woff2 = ["brotli>=1.0"]
+dev = ["pytest>=7"]
+
+[project.scripts]
+fontgate = "fontgate.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/llinok111/fontgate"
+
+[tool.setuptools]
+packages = ["fontgate"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["tests", "."]

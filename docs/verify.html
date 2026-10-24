@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Subset verification — fontgate</title>
+<style>
+:root{
+  color-scheme: light dark;
+  --bg:#FAFAF8; --panel:#FFFFFF; --panel-2:#F2F2EE; --border:#E1E1DA;
+  --fg:#1A1A18; --muted:#6B6B63; --accent:#3A63B8;
+  --ok:#2E7D53; --warn:#9A6B00; --fail:#A32B25; --chip:#EDEDE7;
+  --mono:ui-monospace,SFMono-Regular,"Cascadia Mono","Liberation Mono",monospace;
+  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI","Noto Sans SC",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0F1115; --panel:#161A21; --panel-2:#1C2129; --border:#2A303B;
+    --fg:#E7EAF0; --muted:#98A2B3; --accent:#7FA6E8;
+    --ok:#5FB98A; --warn:#D9A441; --fail:#E0736B; --chip:#222834;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font-family:var(--sans);
+  font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:40px 24px 80px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px 20px;
+  padding-bottom:18px;border-bottom:1px solid var(--border);margin-bottom:28px}
+h1{font-size:22px;font-weight:600;margin:0;letter-spacing:-0.01em}
+.sub{color:var(--muted);font-size:13px;font-family:var(--mono)}
+.badge{display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:999px;
+  font-size:12.5px;font-weight:600;letter-spacing:.02em;border:1px solid currentColor}
+.badge i{width:7px;height:7px;border-radius:50%;background:currentColor;display:block}
+.b-pass{color:var(--ok)} .b-warn{color:var(--warn)} .b-fail{color:var(--fail)}
+h2{font-size:14px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);margin:38px 0 14px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.card .k{font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.card .v{font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:2px}
+.card .u{font-size:12px;color:var(--muted);font-family:var(--mono)}
+table{width:100%;border-collapse:collapse;background:var(--panel);
+  border:1px solid var(--border);border-radius:10px;overflow:hidden;font-size:13.5px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+th{font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);
+  font-weight:600;background:var(--panel-2)}
+td.mono,th.mono{font-family:var(--mono);font-size:12.5px}
+.t-pass{color:var(--ok);font-weight:600} .t-warn{color:var(--warn);font-weight:600}
+.t-fail{color:var(--fail);font-weight:600} .t-skip{color:var(--muted);font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+.glyph{background:var(--panel);border:1px solid var(--border);border-radius:8px;
+  padding:8px;text-align:center;overflow:hidden}
+.glyph .g{font-size:26px;line-height:1.25;min-height:34px;word-break:break-all}
+.glyph .c{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.glyph .n{font-size:10.5px;color:var(--muted)}
+.glyph .f{font-family:var(--mono);font-size:9.5px;color:var(--muted);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.glyph.bad{border-color:color-mix(in srgb,var(--fail) 45%,var(--border))}
+.glyph.empty{border-color:color-mix(in srgb,var(--warn) 45%,var(--border))}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--chip);
+  border-radius:5px;padding:2px 7px;white-space:nowrap}
+.finding{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--muted);
+  border-radius:8px;padding:11px 14px;margin-bottom:8px}
+.finding.error{border-left-color:var(--fail)} .finding.warn{border-left-color:var(--warn)}
+.finding.info{border-left-color:var(--accent)}
+.finding .code{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.finding .msg{margin-top:2px}
+details{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:10px 14px}
+summary{cursor:pointer;font-size:13px;color:var(--muted)}
+pre{font-family:var(--mono);font-size:12px;overflow:auto;max-height:420px;margin:12px 0 0}
+.muted{color:var(--muted)}
+footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--border);
+  color:var(--muted);font-size:12px;font-family:var(--mono)}
+</style></head>
+<body><div class="wrap">
+<header><h1>Subset verification</h1><span class="badge b-warn"><i></i>WARN</span><span class="sub">fonts/msyh.ttc → demo/out/site-subset.woff2</span></header>
+<div class="cards"><div class="card"><div class="k">Status</div><div class="v">WARN</div></div><div class="card"><div class="k">Expected</div><div class="v">354<span class="u">characters</span></div></div><div class="card"><div class="k">Covered</div><div class="v">354</div></div><div class="card"><div class="k">Source</div><div class="v">18.79 MiB</div></div><div class="card"><div class="k">Subset</div><div class="v">104.7 KiB</div></div><div class="card"><div class="k">Ratio</div><div class="v">0.544%</div></div></div><h2>Checks</h2><table><thead><tr><th>Check</th><th>Verdict</th><th>Measured</th></tr></thead><tbody><tr><td class="mono">format</td><td class="t-pass">PASS</td><td>woff2 container</td></tr><tr><td class="mono">tables</td><td class="t-warn">WARN</td><td>22 tables, 1 dropped from source</td></tr><tr><td class="mono">identity</td><td class="t-pass">PASS</td><td>Microsoft YaHei 400</td></tr><tr><td class="mono">coverage</td><td class="t-pass">PASS</td><td>354/354 expected characters present</td></tr><tr><td class="mono">metrics</td><td class="t-pass">PASS</td><td>354 glyphs compared, 0 advance diffs, 0 bounds diffs</td></tr><tr><td class="mono">layout</td><td class="t-pass">PASS</td><td>24 glyph references, 1 features kept, 2 dropped (0 relevant)</td></tr><tr><td class="mono">budget</td><td class="t-pass">PASS</td><td>107164 / 409600 bytes</td></tr></tbody></table><h2>Face comparison</h2><table><thead><tr><th>Property</th><th>Source</th><th>Subset</th></tr></thead><tbody><tr><td class="mono">family</td><td class="mono">Microsoft YaHei</td><td class="mono">Microsoft YaHei</td></tr><tr><td class="mono">subfamily</td><td class="mono">Regular</td><td class="mono">Regular</td></tr><tr><td class="mono">weight</td><td class="mono">400</td><td class="mono">400</td></tr><tr><td class="mono">container</td><td class="mono">collection</td><td class="mono">woff2</td></tr><tr><td class="mono">outlines</td><td class="mono">truetype-glyf</td><td class="mono">truetype-glyf</td></tr><tr><td class="mono">glyphs</td><td class="mono">30209</td><td class="mono">364</td></tr><tr><td class="mono">code points</td><td class="mono">29905</td><td class="mono">355</td></tr><tr><td class="mono">bytes</td><td class="mono">18.79 MiB</td><td class="mono">104.7 KiB</td></tr><tr><td class="mono">sha256</td><td class="mono">d79c55e68b1131ee</td><td class="mono">c3750ceece034430</td></tr></tbody></table><h2>Findings</h2><div class="finding warn"><div class="code">table-missing · tables</div><div class="msg">these tables existed in the source but not in the subset: kern</div><div class="chips"><span class="chip" title="tables">kern</span></div></div>
+<footer>fontgate 1.0.0 · generated 2026-10-24 15:58 UTC · all measurements read from the font binary</footer>
+</div>
+<details style="margin-top:18px"><summary>Raw result JSON</summary>
+<pre>{
+ &quot;checks&quot;: [
+  {
+   &quot;details&quot;: {
+    &quot;actual&quot;: &quot;woff2&quot;,
+    &quot;extension&quot;: &quot;.woff2&quot;,
+    &quot;implied&quot;: &quot;woff2&quot;
+   },
+   &quot;name&quot;: &quot;format&quot;,
+   &quot;status&quot;: &quot;pass&quot;,
+   &quot;summary&quot;: &quot;woff2 container&quot;
+  },
+  {
+   &quot;details&quot;: {
+    &quot;dropped_optional&quot;: [
+     &quot;kern&quot;
+    ],
+    &quot;missing_required&quot;: [],
+    &quot;tables&quot;: [
+     &quot;GDEF&quot;,
+     &quot;GPOS&quot;,
+     &quot;GSUB&quot;,
+     &quot;GlyphOrder&quot;,
+     &quot;OS/2&quot;,
+     &quot;VDMX&quot;,
+     &quot;cmap&quot;,
+     &quot;cvt &quot;,
+     &quot;fpgm&quot;,
+     &quot;gasp&quot;,
+     &quot;glyf&quot;,
+     &quot;hdmx&quot;,
+     &quot;head&quot;,
+     &quot;hhea&quot;,
+     &quot;hmtx&quot;,
+     &quot;loca&quot;,
+     &quot;maxp&quot;,
+     &quot;name&quot;,
+     &quot;post&quot;,
+     &quot;prep&quot;,
+     &quot;vhea&quot;,
+     &quot;vmtx&quot;
+    ]
+   },
+   &quot;name&quot;: &quot;tables&quot;,
+   &quot;status&quot;: &quot;warn&quot;,
+   &quot;summary&quot;: &quot;22 tables, 1 dropped from source&quot;
+  },
+  {
+   &quot;details&quot;: {
+    &quot;family&quot;: &quot;Microsoft YaHei&quot;,
+    &quot;weight_class&quot;: 400
+   },
+   &quot;name&quot;: &quot;identity&quot;,
+   &quot;status&quot;: &quot;pass&quot;,
+   &quot;summary&quot;: &quot;Microsoft YaHei 400&quot;
+  },
+  {
+   &quot;details&quot;: {
+    &quot;covered&quot;: 354,
+    &quot;empty&quot;: 0,
+    &quot;expected&quot;: 354,
+    &quot;missing&quot;: 0
+   },
+   &quot;name&quot;: &quot;coverage&quot;,
+   &quot;status&quot;: &quot;pass&quot;,
+   &quot;summary&quot;: &quot;354/354 expected characters present&quot;
+  },
+  {
+   &quot;details&quot;: {
+    &quot;advance_diffs&quot;: 0,
+    &quot;bounds_diffs&quot;: 0,
+    &quot;compared&quot;: 354
+   },
+   &quot;name&quot;: &quot;metrics&quot;,
+   &quot;status&quot;: &quot;pass&quot;,
+   &quot;summary&quot;: &quot;354 glyphs compared, 0 advance diffs, 0 bounds diffs&quot;
+  },
+  {
+   &quot;details&quot;: {
+    &quot;critical_lost&quot;: [],
+    &quot;dangling&quot;: 0,
+    &quot;dropped_irrelevant&quot;: [
+     &quot;ccmp&quot;,
+     &quot;mark&quot;
+    ],
+    &quot;references_checked&quot;: 24,
+    &quot;source_features&quot;: [
+     &quot;ccmp&quot;,
+     &quot;mark&quot;,
+     &quot;vert&quot;
+    ],
+    &quot;subset_features&quot;: [
+     &quot;vert&quot;
+    ]
+   },
+   &quot;name&quot;: &quot;layout&quot;,
+   &quot;status&quot;: &quot;pass&quot;,
+   &quot;summary&quot;: &quot;24 glyph references, 1 features kept, 2 dropped (0 relevant)&quot;
+  },
+  {
+   &quot;details&quot;: {
+    &quot;budget&quot;: 409600,
+    &quot;bytes&quot;: 107164
+   },
+   &quot;name&quot;: &quot;budget&quot;,
+   &quot;status&quot;: &quot;pass&quot;,
+   &quot;summary&quot;: &quot;107164 / 409600 bytes&quot;
+  }
+ ],
+ &quot;covered&quot;: 354,
+ &quot;expected&quot;: 354,
+ &quot;findings&quot;: [
+  {
+   &quot;code&quot;: &quot;table-missing&quot;,
+   &quot;detail&quot;: {
+    &quot;path&quot;: &quot;demo/out/site-subset.woff2&quot;,
+    &quot;tables&quot;: [
+     &quot;kern&quot;
+    ]
+   },
+   &quot;message&quot;: &quot;these tables existed in the source but not in the subset: kern&quot;,
+   &quot;scope&quot;: &quot;tables&quot;,
+   &quot;severity&quot;: &quot;warn&quot;
+  }
+ ],
+ &quot;kind&quot;: &quot;verify&quot;,
+ &quot;size&quot;: {
+  &quot;ratio&quot;: 0.005439,
+  &quot;saved_bytes&quot;: 19597188,
+  &quot;source_bytes&quot;: 19704352,
+  &quot;subset_bytes&quot;: 107164
+ },
+ &quot;source&quot;: {
+  &quot;cmap_count&quot;: 29905,
+  &quot;cmap_digest&quot;: &quot;a572f7c2290713b5409cf8cded1ac4284d005db3eb195984c04968f7071683a9&quot;,
+  &quot;cmap_subtables&quot;: [
+   {
+    &quot;encoding&quot;: 3,
+    &quot;format&quot;: 4,
+    &quot;mappings&quot;: 29709,
+    &quot;platform&quot;: 0,
+    &quot;supplementary&quot;: 0,
+    &quot;unicode&quot;: true
+   },
+   {
+    &quot;encoding&quot;: 1,
+    &quot;format&quot;: 4,
+    &quot;mappings&quot;: 29709,
+    &quot;platform&quot;: 3,
+    &quot;supplementary&quot;: 0,
+    &quot;unicode&quot;: true
+   },
+   {
+    &quot;encoding&quot;: 10,
+    &quot;format&quot;: 12,
+    &quot;mappings&quot;: 29905,
+    &quot;platform&quot;: 3,
+    &quot;supplementary&quot;: 196,
+    &quot;unicode&quot;: true
+   }
+  ],
+  &quot;container&quot;: &quot;collection&quot;,
+  &quot;face_format&quot;: &quot;truetype-glyf&quot;,
+  &quot;family&quot;: &quot;Microsoft YaHei&quot;,
+  &quot;file_size&quot;: 19704352,
+  &quot;full_name&quot;: &quot;Microsoft YaHei&quot;,
+  &quot;glyph_count&quot;: 30209,
+  &quot;index&quot;: 0,
+  &quot;is_variable&quot;: false,
+  &quot;missing_rendering&quot;: [],
+  &quot;missing_required&quot;: [],
+  &quot;outline_kind&quot;: &quot;truetype-glyf&quot;,
+  &quot;path&quot;: &quot;fonts/msyh.ttc&quot;,
+  &quot;postscript_name&quot;: &quot;MicrosoftYaHei&quot;,
+  &quot;sha256&quot;: &quot;d79c55e68b1131eea0cc1c47be4f572d964f28c682e143db2ad09c1e4cb07a3f&quot;,
+  &quot;subfamily&quot;: &quot;Regular&quot;,
+  &quot;supports_supplementary&quot;: true,
+  &quot;tables&quot;: [
+   &quot;GDEF&quot;,
+   &quot;GPOS&quot;,
+   &quot;GSUB&quot;,
+   &quot;GlyphOrder&quot;,
+   &quot;LTSH&quot;,
+   &quot;MERG&quot;,
+   &quot;OS/2&quot;,
+   &quot;VDMX&quot;,
+   &quot;cmap&quot;,
+   &quot;cvt &quot;,
+   &quot;fpgm&quot;,
+   &quot;gasp&quot;,
+   &quot;glyf&quot;,
+   &quot;hdmx&quot;,
+   &quot;head&quot;,
+   &quot;hhea&quot;,
+   &quot;hmtx&quot;,
+   &quot;kern&quot;,
+   &quot;loca&quot;,
+   &quot;maxp&quot;,
+   &quot;meta&quot;,
+   &quot;name&quot;,
+   &quot;post&quot;,
+   &quot;prep&quot;,
+   &quot;vhea&quot;,
+   &quot;vmtx&quot;
+  ],
+  &quot;variable_axes&quot;: [],
+  &quot;warnings&quot;: [],
+  &quot;weight_class&quot;: 400,
+  &quot;width_class&quot;: 5
+ },
+ &quot;status&quot;: &quot;warn&quot;,
+ &quot;subset&quot;: {
+  &quot;cmap_count&quot;: 355,
+  &quot;cmap_digest&quot;: &quot;9e370a6d283bd2362a5c2ffe8c402c04ad4e9f7000ebff2f850965a80b65a09d&quot;,
+  &quot;cmap_subtables&quot;: [
+   {
+    &quot;encoding&quot;: 3,
+    &quot;format&quot;: 4,
+    &quot;mappings&quot;: 355,
+    &quot;platform&quot;: 0,
+    &quot;supplementary&quot;: 0,
+    &quot;unicode&quot;: true
+   },
+   {
+    &quot;encoding&quot;: 1,
+    &quot;format&quot;: 4,
+    &quot;mappings&quot;: 355,
+    &quot;platform&quot;: 3,
+    &quot;supplementary&quot;: 0,
+    &quot;unicode&quot;: true
+   }
+  ],
+  &quot;container&quot;: &quot;woff2&quot;,
+  &quot;face_format&quot;: &quot;woff2&quot;,
+  &quot;family&quot;: &quot;Microsoft YaHei&quot;,
+  &quot;file_size&quot;: 107164,
+  &quot;full_name&quot;: &quot;Microsoft YaHei&quot;,
+  &quot;glyph_count&quot;: 364,
+  &quot;index&quot;: 0,
+  &quot;is_variable&quot;: false,
+  &quot;missing_rendering&quot;: [
+   &quot;kern&quot;
+  ],
+  &quot;missing_required&quot;: [],
+  &quot;outline_kind&quot;: &quot;truetype-glyf&quot;,
+  &quot;path&quot;: &quot;demo/out/site-subset.woff2&quot;,
+  &quot;postscript_name&quot;: &quot;MicrosoftYaHei&quot;,
+  &quot;sha256&quot;: &quot;c3750ceece034430388004bd10b928822a2b0cd5b1d4dec1e743b5b1fbfa9487&quot;,
+  &quot;subfamily&quot;: &quot;Regular&quot;,
+  &quot;supports_supplementary&quot;: false,
+  &quot;tables&quot;: [
+   &quot;GDEF&quot;,
+   &quot;GPOS&quot;,
+   &quot;GSUB&quot;,
+   &quot;GlyphOrder&quot;,
+   &quot;OS/2&quot;,
+   &quot;VDMX&quot;,
+   &quot;cmap&quot;,
+   &quot;cvt &quot;,
+   &quot;fpgm&quot;,
+   &quot;gasp&quot;,
+   &quot;glyf&quot;,
+   &quot;hdmx&quot;,
+   &quot;head&quot;,
+   &quot;hhea&quot;,
+   &quot;hmtx&quot;,
+   &quot;loca&quot;,
+   &quot;maxp&quot;,
+   &quot;name&quot;,
+   &quot;post&quot;,
+   &quot;prep&quot;,
+   &quot;vhea&quot;,
+   &quot;vmtx&quot;
+  ],
+  &quot;variable_axes&quot;: [],
+  &quot;warnings&quot;: [],
+  &quot;weight_class&quot;: 400,
+  &quot;width_class&quot;: 5
+ },
+ &quot;summary&quot;: {
+  &quot;error&quot;: 0,
+  &quot;info&quot;: 0,
+  &quot;warn&quot;: 1
+ }
+}</pre></details>
+<script type="application/json" id="fontgate-payload">{"checks":[{"details":{"actual":"woff2","extension":".woff2","implied":"woff2"},"name":"format","status":"pass","summary":"woff2 container"},{"details":{"dropped_optional":["kern"],"missing_required":[],"tables":["GDEF","GPOS","GSUB","GlyphOrder","OS/2","VDMX","cmap","cvt ","fpgm","gasp","glyf","hdmx","head","hhea","hmtx","loca","maxp","name","post","prep","vhea","vmtx"]},"name":"tables","status":"warn","summary":"22 tables, 1 dropped from source"},{"details":{"family":"Microsoft YaHei","weight_class":400},"name":"identity","status":"pass","summary":"Microsoft YaHei 400"},{"details":{"covered":354,"empty":0,"expected":354,"missing":0},"name":"coverage","status":"pass","summary":"354/354 expected characters present"},{"details":{"advance_diffs":0,"bounds_diffs":0,"compared":354},"name":"metrics","status":"pass","summary":"354 glyphs compared, 0 advance diffs, 0 bounds diffs"},{"details":{"critical_lost":[],"dangling":0,"dropped_irrelevant":["ccmp","mark"],"references_checked":24,"source_features":["ccmp","mark","vert"],"subset_features":["vert"]},"name":"layout","status":"pass","summary":"24 glyph references, 1 features kept, 2 dropped (0 relevant)"},{"details":{"budget":409600,"bytes":107164},"name":"budget","status":"pass","summary":"107164 / 409600 bytes"}],"covered":354,"expected":354,"findings":[{"code":"table-missing","detail":{"path":"demo/out/site-subset.woff2","tables":["kern"]},"message":"these tables existed in the source but not in the subset: kern","scope":"tables","severity":"warn"}],"kind":"verify","size":{"ratio":0.005439,"saved_bytes":19597188,"source_bytes":19704352,"subset_bytes":107164},"source":{"cmap_count":29905,"cmap_digest":"a572f7c2290713b5409cf8cded1ac4284d005db3eb195984c04968f7071683a9","cmap_subtables":[{"encoding":3,"format":4,"mappings":29709,"platform":0,"supplementary":0,"unicode":true},{"encoding":1,"format":4,"mappings":29709,"platform":3,"supplementary":0,"unicode":true},{"encoding":10,"format":12,"mappings":29905,"platform":3,"supplementary":196,"unicode":true}],"container":"collection","face_format":"truetype-glyf","family":"Microsoft YaHei","file_size":19704352,"full_name":"Microsoft YaHei","glyph_count":30209,"index":0,"is_variable":false,"missing_rendering":[],"missing_required":[],"outline_kind":"truetype-glyf","path":"fonts/msyh.ttc","postscript_name":"MicrosoftYaHei","sha256":"d79c55e68b1131eea0cc1c47be4f572d964f28c682e143db2ad09c1e4cb07a3f","subfamily":"Regular","supports_supplementary":true,"tables":["GDEF","GPOS","GSUB","GlyphOrder","LTSH","MERG","OS/2","VDMX","cmap","cvt ","fpgm","gasp","glyf","hdmx","head","hhea","hmtx","kern","loca","maxp","meta","name","post","prep","vhea","vmtx"],"variable_axes":[],"warnings":[],"weight_class":400,"width_class":5},"status":"warn","subset":{"cmap_count":355,"cmap_digest":"9e370a6d283bd2362a5c2ffe8c402c04ad4e9f7000ebff2f850965a80b65a09d","cmap_subtables":[{"encoding":3,"format":4,"mappings":355,"platform":0,"supplementary":0,"unicode":true},{"encoding":1,"format":4,"mappings":355,"platform":3,"supplementary":0,"unicode":true}],"container":"woff2","face_format":"woff2","family":"Microsoft YaHei","file_size":107164,"full_name":"Microsoft YaHei","glyph_count":364,"index":0,"is_variable":false,"missing_rendering":["kern"],"missing_required":[],"outline_kind":"truetype-glyf","path":"demo/out/site-subset.woff2","postscript_name":"MicrosoftYaHei","sha256":"c3750ceece034430388004bd10b928822a2b0cd5b1d4dec1e743b5b1fbfa9487","subfamily":"Regular","supports_supplementary":false,"tables":["GDEF","GPOS","GSUB","GlyphOrder","OS/2","VDMX","cmap","cvt ","fpgm","gasp","glyf","hdmx","head","hhea","hmtx","loca","maxp","name","post","prep","vhea","vmtx"],"variable_axes":[],"warnings":[],"weight_class":400,"width_class":5},"summary":{"error":0,"info":0,"warn":1}}</script>
+</body></html>
